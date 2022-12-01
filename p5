@@ -1,0 +1,66 @@
+
+use EBE;
+select co.ContactName, cl.ClientName, co.ContactPhone, co.ContactEmail, count(E.EventCode) as num_of_events
+from (client cl right join contact co on co.ClientID = cl.ClientID) left join event_contact E on (cl.ClientID = E.ClientID) AND (co.ClientID = E.ClientID)
+group by cl.ClientName, co.ContactName, co.ContactPhone, co.ContactEmail
+order by ClientName;
+
+
+
+
+-- 2
+use EBE;
+select ClientName, count(Ticket) - sum(Ticket) as NumberOfNonTicketedEvents, sum(Ticket) as NumberOfTicketedEvents, min(EventDate) as Earlist_event,
+max(EventDate) as Latest_event
+from Client C left join Events E on C.ClientID = E.ClientID
+group by ClientName;
+
+
+
+-- 3
+use EBE;
+select E.EventCode, EventName, EventDate, VenueName, Capacity, (EndTime - StartTime) AS EventDuration, TicketsSold AS attendance
+from (events E inner join ticketed_events TE ON E.EventCode = TE.EventCode) inner join Venue V ON E.VenueID = V.VenueID
+where E.EventCode = TE.EventCode and TicketsSold is not null
+union
+select E.EventCode, EventName, EventDate, VenueName, Capacity, (EndTime - StartTime) AS EventDuration, ActualAttendance AS attendance
+from (events E inner join non_ticketed_events NTE ON E.EventCode = NTE.EventCode)inner join Venue V ON E.VenueID = V.VenueID
+where E.EventCode = NTE.EventCode and ActualAttendance is not null
+order by Attendance desc;
+
+
+
+
+
+-- 4
+use EBE;
+select V.VenueID, VenueName, Capacity, count(NTE.EventCode) as no_of_non_ticketed_events
+from (non_ticketed_events NTE left join events E on NTE.EventCode = E.EventCode) left join Venue V on V.VenueID= E.VenueID
+group by VenueID, VenueName, Capacity
+order by no_of_non_ticketed_events desc
+limit 3;
+
+
+
+use EBE;
+select EventName, count(ContactName) as num_CP
+from event_contact EC right join events E on EC.EventCode=E.EventCode
+group by EventName
+order by num_CP DESC
+limit 1;
+
+
+
+
+
+
+use EBE;
+create or replace view EventDetails as
+select c.ClientID, c.ClientName, concat(V.Street,' ', V.City,' ', V.State,' ', V.Zip) as VenueAddress, E.EventCode, E.EventName, E.Description, E.EventDate, E.StartTime, E.EndTime, Ticket, V.VenueID, V.VenueName, Capacity, concat(c.Street,' ', c.City,' ', c.State,' ', c.Zip) as ClientAddress, Parking
+from (events E inner join client c on c.ClientID =E.ClientID) left join venue V on V.VenueID =E.VenueID;
+
+
+
+
+
+
