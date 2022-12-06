@@ -1,7 +1,7 @@
 
 use EBE;
 select co.ContactName, cl.ClientName, co.ContactPhone, co.ContactEmail, count(E.EventCode) as num_of_events
-from (client cl right join contact co on co.ClientID = cl.ClientID) left join event_contact E on (cl.ClientID = E.ClientID) AND (co.ClientID = E.ClientID)
+from (client cl inner join contact co on co.ClientID = cl.ClientID) inner join event_contact E on (cl.ClientID = E.ClientID) AND (co.ClientID = E.ClientID)
 group by cl.ClientName, co.ContactName, co.ContactPhone, co.ContactEmail
 order by ClientName;
 
@@ -62,5 +62,6 @@ from (events E inner join client c on c.ClientID =E.ClientID) left join venue V 
 
 
 
-
+#Q1 group by clientID and contact name-.25
+#Q5 group by event code-.25
 
